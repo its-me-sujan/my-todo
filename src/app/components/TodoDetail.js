@@ -1,5 +1,5 @@
 import { useState } from "react";
-const TodoItem = ({ todo, deleteTodo, updateTodo }) => {
+const TodoDetail = ({ todo, deleteTodo, updateTodo }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [updatedTitle, setUpdatedTitle] = useState(todo.title);
   const [updatedDescription, setUpdatedDescription] = useState(
@@ -68,4 +68,4 @@ const TodoItem = ({ todo, deleteTodo, updateTodo }) => {
   );
 };
 
-export default TodoItem;
+export default TodoDetail;

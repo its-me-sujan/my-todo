@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-const TodoForm = ({ addTodo, date }) => {
+const TodoForm = ({ addTodo }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [idCounter, setIdCounter] = useState(1);
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    
     if (!title || !description) {
       alert("Please enter both a title and description.");
       return;
