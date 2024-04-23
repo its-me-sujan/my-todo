@@ -1,6 +1,5 @@
-const TodoDetail = (params) => {
-    console.log(params.id)
-    return (
+const TodoDetail = ({ params }) => {
+  return (
     <div>
       <p>Todo {params.id}</p>
     </div>
