@@ -2,8 +2,9 @@
 import { useRouter } from "next/navigation";
 const TodoItem = ({ todo }) => {
   const router = useRouter()
+  console.log(todo.id)
   return (
-    <li>
+    <li key={todo.id}>
       <p>{`Todo ${todo.id}`}</p>
       <div
         className="ml-4 border-2 border-black rounded-lg"
