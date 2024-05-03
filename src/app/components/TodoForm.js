@@ -1,68 +1,50 @@
-import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
-import firebase from "../../firebase";
+// components/TodoForm.js
+import { useForm } from "react-hook-form";
 
+export default function TodoForm({onSubmit}) {
+  const { register, handleSubmit, reset, formState } = useForm();
 
-const TodoForm = ({ addTodo }) => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [idCounter, setIdCounter] = useState(1);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!title || !description) {
-      alert("Please enter both a title and description.");
-      return;
-    }
-    const newTodo = {
-      id: idCounter,
-      title,
-      description,
-    };
-    addTodo(newTodo);
-    setIdCounter(idCounter + 1);
-    setTitle("");
-    setDescription("");
-
-    try {
-      const docRef = await addDoc(collection(firebase.db, "todo"), {
-        title: newTodo.title,
-        description: newTodo.description,
-        id: newTodo.id.toString(),
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
+  const { errors } = formState;
+  const handleFormSubmit = (data) => {
+    onSubmit(data);
+    reset();
   };
-
   return (
     <form
-      onSubmit={handleSubmit}
-      className=" max-w-md mx-auto mb-3 p-4 border-4 border-black rounded-lg"
+      className=" max-w-sm  mx-auto mb-3 p-4 border-2 shadow-lg rounded-lg"
+      onSubmit={handleSubmit(handleFormSubmit)}
+      noValidate
     >
-      <label htmlFor="title">Title:</label>
       <input
-        className="w-full h-12 border rounded px-2 mb-2"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Eg. Do Laundry"
+        className="w-full h-12 border-2  rounded-lg px-2 mb-2"
+        {...register("title", {
+          required: {
+            value: true,
+            message: "Title is required",
+          },
+        })}
+        placeholder="Title"
       />
-      <label htmlFor="description">Description:</label>
+      <p>{errors.title?.message}</p>
       <textarea
-        className="w-full h-22 border rounded px-2 mb-2"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Eg. Gather Clothes"
+        className="w-full h-24 border-2 rounded-lg px-2 mb-2"
+        {...register("description", {
+          required: {
+            value: true,
+            message: "Description is required",
+          },
+        })}
+        placeholder="Description"
       />
-      <button
-        type="submit"
-        className="w-full h-8 rounded-lg bg-sky-500 text-white hover:bg-sky-700"
-      >
-        Add Todo
-      </button>
+      <p>{errors.description?.message}</p>
+      <div className="flex justify-center">
+        <button
+          className="w-24 h-8 rounded-lg bg-sky-500 text-white hover:bg-sky-700"
+          type="submit"
+        >
+          Add Todo
+        </button>
+      </div>
     </form>
   );
-};
-
-export default TodoForm;
+}
