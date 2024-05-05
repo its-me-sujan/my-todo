@@ -3,13 +3,14 @@
 import React, { useState, useEffect, useMemo } from "react";
 import db from "../utils/firebase";
 import { collection, getDocs, addDoc } from "firebase/firestore";
+import { doc, deleteDoc } from "firebase/firestore";
 import TodoForm from "./components/TodoForm";
 import TodoTable from "./components/TodoTable";
 
 export default function Home() {
   const [todos, setTodos] = useState([]);
-  
-  useEffect( () => {
+
+  useEffect(() => {
     const fetchTodos = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "todos"));
@@ -31,7 +32,7 @@ export default function Home() {
     if (todos.length === 0) {
       fetchTodos();
     }
-  }, [todos]);
+  }, []);
 
   const columns = [
     { Header: "Title", accessor: "title" },
@@ -58,13 +59,30 @@ export default function Home() {
     }
   };
 
+  const deleteLocalTodo = async (todoId) => {
+    const updatedTodos = todos.filter((todo) => todo.id !== todoId);
+    setTodos(updatedTodos);
+  };
+
+  const updateLocalTodo = async (todoId, newData) => {
+    const updatedTodos = todos.map((todo) =>
+      todo.id === todoId ? { ...todo, ...newData } : todo
+    );
+    setTodos(updatedTodos);
+  };
+
   return (
     <div className="md:flex p-8 ">
       <div className="md:w-1/3 ">
         <TodoForm onSubmit={addTodo} />
       </div>
       <div className="md:w-2/3 mt-6 md:mt-0 md:ml-4">
-        <TodoTable columns={columns} data={todos} />
+        <TodoTable
+          columns={columns}
+          data={todos}
+          onDeleteTodo={deleteLocalTodo}
+          onUpdateTodo={updateLocalTodo}
+        />
       </div>
     </div>
   );
