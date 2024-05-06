@@ -2,10 +2,11 @@ import { useTable } from "react-table";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import db from "../../utils/firebase";
 import { useState } from "react";
+import Modal from "./Modal"
 
 const TodoTable = ({ columns, data, onDeleteTodo, onUpdateTodo }) => {
-  const [editingId, setEditingId] = useState(null);
-  const [editedData, setEditedData] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [editedTodo, setEditedTodo] = useState();
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({
@@ -13,14 +14,11 @@ const TodoTable = ({ columns, data, onDeleteTodo, onUpdateTodo }) => {
       data,
     });
 
-  const updateTodo = async (todoId) => {
+  const updateTodo = async (updatedTodo) => {
     try {
-      const todoDocRef = doc(db, "todos", todoId);
-      await updateDoc(todoDocRef, editedData);
-      console.log("Todo updated in Firebase successfully");
-      setEditingId(null);
-      setEditedData({});
-      onUpdateTodo(todoId, editedData);
+      const todoDocRef = doc(db, "todos", updatedTodo.id);
+      await updateDoc(todoDocRef, updatedTodo);
+      onUpdateTodo(updatedTodo.id, updatedTodo);
     } catch (error) {
       console.error("Error updating todo:", error);
     }
@@ -30,29 +28,37 @@ const TodoTable = ({ columns, data, onDeleteTodo, onUpdateTodo }) => {
     try {
       const todoDocRef = doc(db, "todos", todoId);
       await deleteDoc(todoDocRef);
-      console.log("Todo deleted successfully from Firestore");
       onDeleteTodo(todoId);
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
   };
-  const handleCellClick = (cell) => {
-    setEditingId(cell.row.id);
-    setEditedData({ ...editedData, [cell.column.id]: cell.value });
+  const handleUpdateButtonClick = (todo) => {
+    setEditedTodo(todo);
+    setShowModal(true);
   };
 
-  const handleInputChange = (e, cell) => {
-    const { value } = e.target;
-    setEditedData({ ...editedData, [cell.column.id]: value });
+  const handleSave = () => {
+    updateTodo(editedTodo);
+    setShowModal(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedTodo({
+      ...editedTodo,
+      [name]: value,
+    });
+    
   };
 
   return (
-    <div>
+    <div className="md:flex">
       <table
         {...getTableProps()}
         className="w-full sm:w-24 border border-black rounded-lg "
       >
-        <thead className="text-left bg-gray-500">
+        <thead className="text-left bg-gray-100">
           {headerGroups.map((headerGroups) => (
             <tr
               {...headerGroups.getHeaderGroupProps()}
@@ -80,29 +86,19 @@ const TodoTable = ({ columns, data, onDeleteTodo, onUpdateTodo }) => {
                     {...cell.getCellProps()}
                     className="p-2 border-r border-black"
                     key={cell.column.id}
-                    onClick={() => handleCellClick(cell)}
                   >
-                    {editingId === row.id && cell.column.id in editedData ? (
-                      <input
-                        type="text"
-                        id={cell.column.id}
-                        value={editedData[cell.column.id]}
-                        onChange={(e) => handleInputChange(e, cell)}
-                      />
-                    ) : (
-                      cell.render("Cell")
-                    )}
+                    {cell.render("Cell")}
                   </td>
                 ))}
                 <td className="p-2  border-black sm:flex">
                   <button
-                    className="border border-black px-3 py-1 mr-3 hover:bg-slate-400"
-                    onClick={() => updateTodo(row.original.id)}
+                    className="px-3 py-1 mr-3 mb-1 sm:mb-0 rounded-lg bg-sky-500 text-white hover:bg-sky-700"
+                    onClick={() => handleUpdateButtonClick(row.original)}
                   >
                     Update
                   </button>
                   <button
-                    className="border border-black px-3 py-1 hover:bg-slate-400"
+                    className="px-3 py-1 rounded-lg bg-sky-500 text-white hover:bg-sky-700"
                     onClick={() => deleteTodo(row.original.id)}
                   >
                     Delete
@@ -113,6 +109,13 @@ const TodoTable = ({ columns, data, onDeleteTodo, onUpdateTodo }) => {
           })}
         </tbody>
       </table>
+      <Modal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        editedTodo={editedTodo}
+        handleInputChange={handleInputChange}
+        handleSave={handleSave}
+      />
     </div>
   );
 };

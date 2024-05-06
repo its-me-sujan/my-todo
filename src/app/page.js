@@ -1,9 +1,7 @@
-// pages/index.js
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import db from "../utils/firebase";
 import { collection, getDocs, addDoc } from "firebase/firestore";
-import { doc, deleteDoc } from "firebase/firestore";
 import TodoForm from "./components/TodoForm";
 import TodoTable from "./components/TodoTable";
 
@@ -23,7 +21,6 @@ export default function Home() {
           };
           tempTodos.push(todo);
         });
-        console.log("Todos fetched from Firebase");
         setTodos(tempTodos);
       } catch (error) {
         console.error("Error fetching todos: ", error);
@@ -41,18 +38,12 @@ export default function Home() {
 
   const addTodo = async (data) => {
     const newTodo = {
-      id: new Date().getTime().toString(),
       title: data["title"],
       description: data["description"],
     };
-    // console.log(newTodo);
     try {
-      const docRef = await addDoc(collection(db, "todos"), {
-        id: newTodo.id.toString(),
-        title: newTodo.title,
-        description: newTodo.description,
-      });
-      console.log("Document written with ID: ", docRef.id);
+      const todoDocRef = await addDoc(collection(db, "todos"), newTodo);
+      newTodo.id = todoDocRef.id;
       setTodos([...todos, newTodo]);
     } catch (e) {
       console.error("Error adding document: ", e);
